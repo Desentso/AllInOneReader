@@ -18,3 +18,11 @@ app.get("/", (req, resp) => {
 
 	resp.sendFile(path.join(__dirname + "/public/index.html"));
 });
+
+app.get("/getData/:source", (req, resp) => {
+
+	var data = ["abc"];
+
+	resp.setHeader('Content-Type', 'application/json');
+	resp.send(JSON.stringify(data));
+});
