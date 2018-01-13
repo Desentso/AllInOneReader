@@ -47,11 +47,12 @@ class App extends React.Component {
 		//this.setState({view: data});
 		console.log("DATA", data);
 		
-		fetch("/getData/" + data)
+		fetch("/getData/" + data).then((resp) => {return resp.json()})
 		.then((data) => {
 			this.setState({view: data});
 		})
 		.catch((err) => {
+			console.log(err);
 			this.setState({view: "error"});
 		});
 
