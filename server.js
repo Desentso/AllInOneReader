@@ -57,6 +57,27 @@ const getRedditData = () => {
 };
 
 const getHackerNewsData = () => {
+
+	var data = [];
+
+	fetch("https://hacker-news.firebaseio.com/v0/topstories.json").then(resp => {return resp.json})
+	.then(data => {
+
+		let top25Ids = data[0:25];
+
+		async.each(top25Ids, (id, callback) => {
+
+			fetch("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(resp => {return resp.json})
+			.then(data => {
+
+			})
+			.catch(err => {});
+		}, () => {
+
+			return 
+		});
+	})
+	.catch(err => {});
 	return
 };
 
