@@ -4,8 +4,15 @@ class View extends React.Component {
 	}
 
 	render(){
+
+		let elems = [];
+		const data = this.props.view;
+		for (let i = 0; i < data.length; i++){
+			elems.push(<a className="postLink" href={data[i].url}><div className="post"><div className="top"><p className="postTitle">{data[i].title}</p></div><div className="bot"><p className="postBotP">{data[i].source} by {data[i].author} {data[i].score}pts {data[i].comments} comments</p></div></div></a>);
+		};
+
 		return (
-			<div>{this.props.view}</div>
+			<div className="View">{elems}</div>
 		);
 	}
 };
@@ -24,11 +31,11 @@ class List extends React.Component {
 
 		let elems = [];
 		for(let i = 0; i < this.props.sources.length; i++){
-			elems.push(<li onClick={this.getValue}>{this.props.sources[i]}</li>);
+			elems.push(<li className="listItem" onClick={this.getValue}>{this.props.sources[i]}</li>);
 		};
 
 		return (
-			<ul>
+			<ul className="List">
 				{elems}
 			</ul>
 		);
@@ -49,6 +56,7 @@ class App extends React.Component {
 		
 		fetch("/getData/" + data).then((resp) => {return resp.json()})
 		.then((data) => {
+			console.log(data);
 			this.setState({view: data});
 		})
 		.catch((err) => {
@@ -60,7 +68,7 @@ class App extends React.Component {
 
 	render() {
 		return (
-			<div>
+			<div style={{height: "100%"}}>
 				<List setViewState={this.setViewState} sources={this.props.sources}/>
 				<View view={this.state.view} />
 			</div>

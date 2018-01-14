@@ -1,4 +1,55 @@
 html, body {
 	margin: 0;
 	padding: 0;
+	color: #333;
+	font-family: Roboto, sans-serif;
+	height: 100%;
+}
+
+.List {
+	width: 400px;
+	height: 100%;
+	float: left;
+	margin-top: 0;
+	padding-top: 100px;
+	list-style-type: none;
+	background-color: #ddd;
+	border-right: 1px solid #bbb;
+}
+
+.listItem {
+	margin-top: 10px;
+	cursor: pointer;
+}
+
+.listItem:hover {
+	text-decoration: underline;
+}
+
+.View {
+	width: calc(100% - 445px);
+	float: left;
+}
+
+.post {
+	width: 800px;
+	padding: 25px 25px;
+	border-bottom: 1px solid #ddd;
+}
+
+.postLink {
+	text-decoration: none;
+	color: #333;
+}
+
+.postTitle {
+	font-size: 20px;
+	margin: 0;
+}
+
+.postBotP {
+	margin: 0;
+	color: #888;
+	font-size: 14px;
+	margin-top: 5px;
 }
