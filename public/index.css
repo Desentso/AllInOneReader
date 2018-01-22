@@ -6,6 +6,10 @@ html, body {
 	height: 100%;
 }
 
+#app {
+	height: 100%;
+}
+
 .List {
 	width: 400px;
 	height: 100%;
@@ -15,11 +19,16 @@ html, body {
 	list-style-type: none;
 	background-color: #ddd;
 	border-right: 1px solid #bbb;
+	margin-left: 0;
+	padding-left: 0;
 }
 
 .listItem {
 	margin-top: 10px;
 	cursor: pointer;
+	border-bottom: 1px solid #ccc;
+	padding-left: 20px;
+	padding-bottom: 10px;
 }
 
 .listItem:hover {

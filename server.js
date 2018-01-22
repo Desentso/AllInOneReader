@@ -28,17 +28,20 @@ app.get("/getData/:source", (req, resp) => {
 	const source = req.params.source;
 
 	switch (source) {
+		case "All In One":
+			getAllData(resp);
+			break;
 		case "Reddit":
-			data = getRedditData(resp);
+			getRedditData(resp);
 			break;
 		case "Hacker News":
-			data = getHackerNewsData(resp);
+			getHackerNewsData(resp);
 			break;
 		case "Medium":
-			data = getMediumData(resp);
+			getMediumData(resp);
 			break;
 		case "Product Hunt":
-			data = getProductHuntData(resp);
+			getProductHuntData(resp);
 			break;
 		default:
 			sendGetDataResp(data, resp);
@@ -48,24 +51,40 @@ app.get("/getData/:source", (req, resp) => {
 
 const sendGetDataResp = (data, resp) => {
 	if (data == []) {
+
 		resp.setHeader('Content-Type', 'application/json');
 		resp.sendStatus(400);
 	} else {
-		console.log("sended data");
+
 		console.log(data.length, "sended data");
 		resp.setHeader('Content-Type', 'application/json');
 		resp.send(JSON.stringify(data));
 	}
 };
 
-const getRedditData = (respToClient) => {
-
-	return
+const getAllData = respToClient => {
+	sendGetDataResp([], respToClient);
 };
 
-const getHackerNewsData = (respToClient) => {
+const getRedditData = respToClient => {
 
-	var allData = [];
+	const allData = [];
+
+	axios.get("https://www.reddit.com/r/programming/.json").then(resp => {return resp.data;})
+	.then(data => {
+		for (let i = 0; i < data.data.children.length; i++){
+			const oneEntry = data.data.children[i].data;
+			allData.push({"url": oneEntry.url, "id": oneEntry.id, "title": oneEntry.title, "timestamp": oneEntry.created_utc, "author": oneEntry.author, "numComments": oneEntry.num_comments, "commentsUrl": "https://www.reddit.com/r/programming/comments/" + oneEntry.id, "score": oneEntry.score, "sitePostId": oneEntry.id, "source": "Reddit"});
+		}
+
+		sendGetDataResp(allData, respToClient);
+	})
+	.catch(err => {console.log(err); sendGetDataResp([], respToClient);});
+};
+
+const getHackerNewsData = respToClient => {
+
+	const allData = [];
 
 	axios.get("https://hacker-news.firebaseio.com/v0/topstories.json").then(resp => {return resp.data;})
 	.then(data => {
@@ -78,7 +97,7 @@ const getHackerNewsData = (respToClient) => {
 			axios.get("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(resp => {return resp.data})
 			.then(data => {
 				//console.log(data);
-				allData.push({"url": data.url, "id": id, "title": data.title, "timestamp": data.time, "author": data.by, "comments": data.descendants , "score": data.score, "sitePostId": data.id, "source": "Hacker News"});
+				allData.push({"url": data.url, id: id, "title": data.title, "timestamp": data.time, "author": data.by, "numComments": data.descendants, "commentsUrl": "https://news.ycombinator.com/item?id=" + id, "score": data.score, "sitePostId": data.id, "source": "Hacker News"});
 				callback(null);
 			})
 			.catch(err => {});
@@ -88,14 +107,14 @@ const getHackerNewsData = (respToClient) => {
 			//return allData;
 		});
 	})
-	.catch(err => {console.log(err); return [];});
+	.catch(err => { console.log(err); sendGetDataResp([], respToClient) });
 	//return [];
 };
 
-const getMediumData = (respToClient) => {
-	return
+const getMediumData = respToClient => {
+	sendGetDataResp([], respToClient);
 };	
 
-const getProductHuntData = (respToClient) => {
-	return
+const getProductHuntData = respToClient => {
+	sendGetDataResp([], respToClient);
 };
