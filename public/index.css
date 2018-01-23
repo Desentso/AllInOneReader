@@ -62,3 +62,7 @@ html, body {
 	font-size: 14px;
 	margin-top: 5px;
 }
+
+.commentsLink {
+	color: inherit;
+}

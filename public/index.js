@@ -8,7 +8,7 @@ class View extends React.Component {
 		let elems = [];
 		const data = this.props.view;
 		for (let i = 0; i < data.length; i++){
-			elems.push(<a className="postLink" href={data[i].url}><div className="post"><div className="top"><p className="postTitle">{data[i].title}</p></div><div className="bot"><p className="postBotP">{data[i].source} by {data[i].author} {data[i].score}pts <a href={data[i].commentsUrl}>{data[i].numComments} comments</a></p></div></div></a>);
+			elems.push(<a className="postLink" href={data[i].url}><div className="post"><div className="top"><p className="postTitle">{data[i].title}</p></div><div className="bot"><p className="postBotP">{data[i].source} by {data[i].author} {data[i].score}pts <a href={data[i].commentsUrl} className="commentsLink">{data[i].numComments} comments</a></p></div></div></a>);
 		};
 
 		return (
@@ -20,17 +20,17 @@ class View extends React.Component {
 class List extends React.Component {
 	constructor(props){
 		super(props);
+		//Set the view to "All In One" on first page load
 		this.props.setViewState("All In One");
 	}
 
-	getValue = (e) => {
-		console.log(e.target.innerText);
+	getValue = e => {
 		this.props.setViewState(e.target.innerText);
 	}
 
 	render(){
 
-		let elems = [];
+		const elems = [];
 		for(let i = 0; i < this.props.sources.length; i++){
 			elems.push(<li className="listItem" onClick={this.getValue}>{this.props.sources[i]}</li>);
 		};
@@ -51,12 +51,12 @@ class App extends React.Component {
 		};
 	}
 
+	//Called from the List component from the user clicks a item on the list
 	setViewState = data => {
-		//this.setState({view: data});
-		console.log("DATA", data);
 
+		//If all in one is selected, fetch all the sources from server
 		if (data === "All In One"){
-			let allData = [];
+			const allData = [];
 			for(let i = 0; i < this.props.sources.length; i++){
 
 				const source = this.props.sources[i];
@@ -64,53 +64,41 @@ class App extends React.Component {
 					continue;
 				}
 
-				fetch("/getData/" + source).then((resp) => {return resp.json()})
+				fetch("/getData/" + source).then((resp) => resp.json())
 				.then((data) => {
-					//console.log(data);
-
-					/*for (let i = 0; i < data.length; i+=2){
-
-						newArr[i] = data[i];
-						newArr[i + 1] = allData[i];//"";
-						newArr[i + 2] = data[i + 1];
-						newArr[i + 3] = allData[i + 1];//"";
-						newArr[i + 4] = data[i + 2];
-						newArr[i + 5] = allData[i + 2];
-					}*/
 
 					let newArr = [];
 
 					allData.push(data);
 
+					//Combines the data so that they are evenly spaced e.g 1,2,3,1,2,3 and not 1,1,2,2,3,3
 					for (let i = 0; i < data.length; i++){
 						for (let arr = 0; arr < allData.length; arr++){
 							newArr.push(allData[arr][i]);
 						}
 					}
 
-					console.log("newArr", newArr);
-					newArr = newArr.filter(item => {return (item != (undefined || null))})
-					console.log("after filter", newArr);
+					//Removes any empty/faulty items
+					newArr = newArr.filter(item => (item != (undefined || null)))
 
 					this.setState({view: newArr});
 				})
 				.catch((err) => {
 					console.log(err);
-					//this.setState({view: "error"});
+					this.setState({view: {"title": "An error occurred", "url": "#", "id": "", "timestamp": "", "author": "", "numComments": "", "commentsUrl": "#", "score": "", "sitePostId": "", "source": ""}});
 				});
 			}
 
-			//this.setState({view: allData});
 		} else {
 		
-			fetch("/getData/" + data).then((resp) => {return resp.json()})
+			fetch("/getData/" + data).then((resp) => resp.json())
 			.then((data) => {
-				console.log(data);
+				
 				this.setState({view: data});
 			})
 			.catch((err) => {
 				console.log(err);
-				this.setState({view: "error"});
+				this.setState({view: {"title": "An error occurred", "url": "#", "id": "", "timestamp": "", "author": "", "numComments": "", "commentsUrl": "#", "score": "", "sitePostId": "", "source": ""}});
 			});
 		}
 
@@ -127,7 +115,7 @@ class App extends React.Component {
 };
 
 
-var sources = ["All In One", "Reddit", "Hacker News", "Product Hunt"];
+const sources = ["All In One", "Reddit", "Hacker News", "Product Hunt"];
 ReactDOM.render(
 	<App sources = {sources}/>,
 	document.getElementById("app")

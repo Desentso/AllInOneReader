@@ -8,7 +8,7 @@ const async = require("async");
 const app = express();
 
 app.set('port', (process.env.PORT || 5000))
-app.listen(app.get('port'), function() {
+app.listen(app.get('port'), () => {
   console.log("Node app is running at localhost:" + app.get('port'))
 });
 
@@ -104,11 +104,9 @@ const getHackerNewsData = respToClient => {
 		}, () => {
 			console.log(allData.length);
 			sendGetDataResp(allData, respToClient);
-			//return allData;
 		});
 	})
 	.catch(err => { console.log(err); sendGetDataResp([], respToClient) });
-	//return [];
 };
 
 /*const getMediumData = respToClient => {
