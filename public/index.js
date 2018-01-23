@@ -20,6 +20,7 @@ class View extends React.Component {
 class List extends React.Component {
 	constructor(props){
 		super(props);
+		this.props.setViewState("All In One");
 	}
 
 	getValue = (e) => {
@@ -50,25 +51,74 @@ class App extends React.Component {
 		};
 	}
 
-	setViewState = (data) => {
+	setViewState = data => {
 		//this.setState({view: data});
 		console.log("DATA", data);
+
+		if (data === "All In One"){
+			let allData = [];
+			for(let i = 0; i < this.props.sources.length; i++){
+
+				const source = this.props.sources[i];
+				if (source == "All In One"){
+					continue;
+				}
+
+				fetch("/getData/" + source).then((resp) => {return resp.json()})
+				.then((data) => {
+					//console.log(data);
+
+					/*for (let i = 0; i < data.length; i+=2){
+
+						newArr[i] = data[i];
+						newArr[i + 1] = allData[i];//"";
+						newArr[i + 2] = data[i + 1];
+						newArr[i + 3] = allData[i + 1];//"";
+						newArr[i + 4] = data[i + 2];
+						newArr[i + 5] = allData[i + 2];
+					}*/
+
+					let newArr = [];
+
+					allData.push(data);
+
+					for (let i = 0; i < data.length; i++){
+						for (let arr = 0; arr < allData.length; arr++){
+							newArr.push(allData[arr][i]);
+						}
+					}
+
+					console.log("newArr", newArr);
+					newArr = newArr.filter(item => {return (item != (undefined || null))})
+					console.log("after filter", newArr);
+
+					this.setState({view: newArr});
+				})
+				.catch((err) => {
+					console.log(err);
+					//this.setState({view: "error"});
+				});
+			}
+
+			//this.setState({view: allData});
+		} else {
 		
-		fetch("/getData/" + data).then((resp) => {return resp.json()})
-		.then((data) => {
-			console.log(data);
-			this.setState({view: data});
-		})
-		.catch((err) => {
-			console.log(err);
-			this.setState({view: "error"});
-		});
+			fetch("/getData/" + data).then((resp) => {return resp.json()})
+			.then((data) => {
+				console.log(data);
+				this.setState({view: data});
+			})
+			.catch((err) => {
+				console.log(err);
+				this.setState({view: "error"});
+			});
+		}
 
 	}
 
 	render() {
 		return (
-			<div style={{height: "100%"}}>
+			<div style={{height: "7280px"}}>
 				<List setViewState={this.setViewState} sources={this.props.sources}/>
 				<View view={this.state.view} />
 			</div>
@@ -77,7 +127,7 @@ class App extends React.Component {
 };
 
 
-var sources = ["All In One", "Reddit", "Hacker News", "Medium", "Product Hunt"];
+var sources = ["All In One", "Reddit", "Hacker News", "Product Hunt"];
 ReactDOM.render(
 	<App sources = {sources}/>,
 	document.getElementById("app")

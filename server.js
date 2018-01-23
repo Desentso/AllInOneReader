@@ -70,11 +70,11 @@ const getRedditData = respToClient => {
 
 	const allData = [];
 
-	axios.get("https://www.reddit.com/r/programming/.json").then(resp => {return resp.data;})
+	axios.get("https://www.reddit.com/r/programming/.json").then(resp => resp.data)
 	.then(data => {
 		for (let i = 0; i < data.data.children.length; i++){
-			const oneEntry = data.data.children[i].data;
-			allData.push({"url": oneEntry.url, "id": oneEntry.id, "title": oneEntry.title, "timestamp": oneEntry.created_utc, "author": oneEntry.author, "numComments": oneEntry.num_comments, "commentsUrl": "https://www.reddit.com/r/programming/comments/" + oneEntry.id, "score": oneEntry.score, "sitePostId": oneEntry.id, "source": "Reddit"});
+			const post = data.data.children[i].data;
+			allData.push({"url": post.url, "id": post.id, "title": post.title, "timestamp": post.created_utc, "author": post.author, "numComments": post.num_comments, "commentsUrl": "https://www.reddit.com/r/programming/comments/" + post.id, "score": post.score, "sitePostId": post.id, "source": "Reddit"});
 		}
 
 		sendGetDataResp(allData, respToClient);
@@ -86,7 +86,7 @@ const getHackerNewsData = respToClient => {
 
 	const allData = [];
 
-	axios.get("https://hacker-news.firebaseio.com/v0/topstories.json").then(resp => {return resp.data;})
+	axios.get("https://hacker-news.firebaseio.com/v0/topstories.json").then(resp => resp.data)
 	.then(data => {
 
 		//Fetch only the top 25 posts
@@ -94,7 +94,7 @@ const getHackerNewsData = respToClient => {
 		//console.log(top25Ids);
 		async.each(top25Ids, (id, callback) => {
 
-			axios.get("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(resp => {return resp.data})
+			axios.get("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(resp => resp.data)
 			.then(data => {
 				//console.log(data);
 				allData.push({"url": data.url, id: id, "title": data.title, "timestamp": data.time, "author": data.by, "numComments": data.descendants, "commentsUrl": "https://news.ycombinator.com/item?id=" + id, "score": data.score, "sitePostId": data.id, "source": "Hacker News"});
@@ -111,10 +111,23 @@ const getHackerNewsData = respToClient => {
 	//return [];
 };
 
-const getMediumData = respToClient => {
-	sendGetDataResp([], respToClient);
-};	
+/*const getMediumData = respToClient => {
+	sendGetDataResp([{"url": "data.url", id: "id", "title": "Medium", "timestamp": "data.time", "author":" data.by", "numComments": "0", "commentsUrl": "https://news.ycombinator.com/item?id=" + "id", "score": 0, "sitePostId": 0, "source": "Medium"},
+		{"url": "data.url", id: "id", "title": "Medium", "timestamp": "data.time", "author":" data.by", "numComments": "0", "commentsUrl": "https://news.ycombinator.com/item?id=" + "id", "score": 0, "sitePostId": 0, "source": "Medium"}], respToClient);
+};*/	
 
 const getProductHuntData = respToClient => {
-	sendGetDataResp([], respToClient);
+	
+	const apikey = "4ffc58a37cf8b7c48800f415d3402e693507036dddccc4e701bac3f64531c11e"
+	
+	const allData = [];
+	axios.get("https://api.producthunt.com/v1/posts?access_token=" + apikey).then(resp => resp.data)
+	.then(data => {
+		for (let i = 0; i < data.posts.length; i++){
+			const post = data.posts[i];
+			allData.push({"url": post.redirect_url, "id": post.id, "title": post.name + " - " + post.tagline, "timestamp": post.created_at, "author": post.user.username, "numComments": post.comments_count, "commentsUrl": post.discussion_url, "score": post.votes_count, "sitePostId": post.id, "source": "Product Hunt"});
+		}
+		sendGetDataResp(allData, respToClient);
+	})
+	.catch(err => { console.log(err); sendGetDataResp([], respToClient) });
 };
