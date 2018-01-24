@@ -17,10 +17,12 @@ app.use(bodyParser.json());
 
 const sources = {"Reddit": "", "Hacker News": "", "Medium": "", "Product Hunt": ""};
 
+
 app.get("/", (req, resp) => {
 
 	resp.sendFile(path.join(__dirname + "/public/index.html"));
 });
+
 
 app.get("/getData/:source", (req, resp) => {
 
@@ -37,9 +39,6 @@ app.get("/getData/:source", (req, resp) => {
 		case "Hacker News":
 			getHackerNewsData(resp);
 			break;
-		case "Medium":
-			getMediumData(resp);
-			break;
 		case "Product Hunt":
 			getProductHuntData(resp);
 			break;
@@ -49,6 +48,7 @@ app.get("/getData/:source", (req, resp) => {
 
 });
 
+
 const sendGetDataResp = (data, resp) => {
 	if (data == []) {
 
@@ -56,15 +56,17 @@ const sendGetDataResp = (data, resp) => {
 		resp.sendStatus(400);
 	} else {
 
-		console.log(data.length, "sended data");
+		//console.log(data.length, "sended data");
 		resp.setHeader('Content-Type', 'application/json');
 		resp.send(JSON.stringify(data));
 	}
 };
 
+
 const getAllData = respToClient => {
 	sendGetDataResp([], respToClient);
 };
+
 
 const getRedditData = respToClient => {
 
@@ -72,15 +74,20 @@ const getRedditData = respToClient => {
 
 	axios.get("https://www.reddit.com/r/programming/.json").then(resp => resp.data)
 	.then(data => {
-		for (let i = 0; i < data.data.children.length; i++){
-			const post = data.data.children[i].data;
-			allData.push({"url": post.url, "id": post.id, "title": post.title, "timestamp": post.created_utc, "author": post.author, "numComments": post.num_comments, "commentsUrl": "https://www.reddit.com/r/programming/comments/" + post.id, "score": post.score, "sitePostId": post.id, "source": "Reddit"});
-		}
 
-		sendGetDataResp(allData, respToClient);
+		async.each(data.data.children, (data, callback) => {
+
+			const post = data.data;
+			allData.push({"url": post.url, "id": post.id, "title": post.title, "timestamp": post.created_utc, "author": post.author, "numComments": post.num_comments, "commentsUrl": "https://www.reddit.com/r/programming/comments/" + post.id, "score": post.score, "sitePostId": post.id, "source": "Reddit"});
+			callback(null);
+		}, () => {
+			sendGetDataResp(allData, respToClient);
+		})
+
 	})
 	.catch(err => {console.log(err); sendGetDataResp([], respToClient);});
 };
+
 
 const getHackerNewsData = respToClient => {
 
@@ -96,7 +103,7 @@ const getHackerNewsData = respToClient => {
 
 			axios.get("https://hacker-news.firebaseio.com/v0/item/" + id + ".json").then(resp => resp.data)
 			.then(data => {
-				//console.log(data);
+				
 				allData.push({"url": data.url, id: id, "title": data.title, "timestamp": data.time, "author": data.by, "numComments": data.descendants, "commentsUrl": "https://news.ycombinator.com/item?id=" + id, "score": data.score, "sitePostId": data.id, "source": "Hacker News"});
 				callback(null);
 			})
@@ -109,10 +116,6 @@ const getHackerNewsData = respToClient => {
 	.catch(err => { console.log(err); sendGetDataResp([], respToClient) });
 };
 
-/*const getMediumData = respToClient => {
-	sendGetDataResp([{"url": "data.url", id: "id", "title": "Medium", "timestamp": "data.time", "author":" data.by", "numComments": "0", "commentsUrl": "https://news.ycombinator.com/item?id=" + "id", "score": 0, "sitePostId": 0, "source": "Medium"},
-		{"url": "data.url", id: "id", "title": "Medium", "timestamp": "data.time", "author":" data.by", "numComments": "0", "commentsUrl": "https://news.ycombinator.com/item?id=" + "id", "score": 0, "sitePostId": 0, "source": "Medium"}], respToClient);
-};*/	
 
 const getProductHuntData = respToClient => {
 	
@@ -121,11 +124,15 @@ const getProductHuntData = respToClient => {
 	const allData = [];
 	axios.get("https://api.producthunt.com/v1/posts?access_token=" + apikey).then(resp => resp.data)
 	.then(data => {
-		for (let i = 0; i < data.posts.length; i++){
-			const post = data.posts[i];
+
+		async.each(data.posts, (post, callback) => {
+
 			allData.push({"url": post.redirect_url, "id": post.id, "title": post.name + " - " + post.tagline, "timestamp": post.created_at, "author": post.user.username, "numComments": post.comments_count, "commentsUrl": post.discussion_url, "score": post.votes_count, "sitePostId": post.id, "source": "Product Hunt"});
-		}
-		sendGetDataResp(allData, respToClient);
+			callback(null);
+		}, () => {
+			sendGetDataResp(allData, respToClient);
+		});
+
 	})
 	.catch(err => { console.log(err); sendGetDataResp([], respToClient) });
 };
